@@ -63,3 +63,51 @@ SELECT student_name FROM student s INNER JOIN enrollment e ON s.student_id=e.stu
     INNER JOIN course c ON c.course_id=e.course_id 
     WHERE course_name='Next.js';
 
+-- Query 3
+CREATE or REPLACE FUNCTION get_highest_score_2()
+RETURNS INT
+LANGUAGE plpgsql
+AS
+$$ 
+    DECLARE
+    Max_mark INT;
+    high_stud INT;
+    BEGIN
+    SELECT MAX(COALESCE(frontend_mark,0)+COALESCE(backend_mark,0)) INTO Max_mark  FROM student;
+    SELECT student_id INTO high_stud FROM student WHERE (COALESCE(frontend_mark,0)+COALESCE(backend_mark,0))=Max_mark;
+    RETURN high_stud;
+    END
+$$
+
+UPDATE student SET status='Awarded' WHERE student_id=get_highest_score_2();
+    
+SELECT * FROM student;
+
+
+-- Query 4
+DELETE FROM course WHERE course_name IN (
+    SELECT course_name as enrollments 
+    FROM course c LEFT JOIN enrollment e 
+    ON c.course_id=e.course_id 
+    GROUP BY course_name 
+    HAVING count(enrollment_id)=0
+);
+
+SELECT * FROM course;
+
+-- Query 5
+SELECT * FROM student LIMIT 2;
+
+-- Query 6
+SELECT course_name,count(enrollment_id) as students_enrolled 
+    FROM course c LEFT JOIN enrollment e 
+    ON c.course_id=e.course_id 
+    GROUP BY course_name;
+
+-- Query 7
+SELECT ROUND(AVG(age),2)  as average_age FROM student;
+
+-- Query 8
+-- Since there was no email having the domain name @example.com I updated an email domain to @gmail.com just for demonstration purpose
+UPDATE student SET email='hasan@gamil.com' WHERE student_name='Hasan';
+SELECT student_name FROM student WHERE email LIKE '%@example.com';
